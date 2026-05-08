@@ -1,0 +1,60 @@
+Sample Execution Logs
+=====================
+
+[Receptionist] Patient #1 received: Ali Khan | severity=9 | priority=1 | bed=ICU
+[Receptionist] Priority: 1, queue_count=1
+[Scheduler] Dequeued patient #1 (Ali Khan), priority=1
+[Scheduler] Bed allocated for Ali Khan: partition 0 (ICU), size=3
+[Scheduler] Launching patient simulator for patient #1
+[Patient-Simulator] Patient #1 started treatment in ICU
+
+[Receptionist] Patient #2 received: Sara Ahmed | severity=5 | priority=3 | bed=GENERAL
+[Receptionist] Priority: 3, queue_count=1
+[Scheduler] Dequeued patient #2 (Sara Ahmed), priority=3
+[Scheduler] Bed allocated for Sara Ahmed: partition 4 (GENERAL), size=1
+[Scheduler] Ward snapshot updated after allocation
+
+[Receptionist] Patient #3 received: John Doe | severity=8 | priority=2 | bed=ICU
+[Receptionist] Priority: 2, queue_count=1
+[Scheduler] Dequeued patient #3 (John Doe), priority=2
+[Scheduler] Bed allocated for John Doe: partition 1 (ICU), size=3
+[Scheduler] Partition split applied for best-fit placement
+
+[Nurse-ICU] Discharge signal received for patient #1
+[Admissions] Bed freed for patient #1; coalescing adjacent free partitions
+[Admissions] ICU semaphore released
+[Scheduler] Bed freed condition signaled
+[Scheduler] Resuming allocation after bed release
+
+[Receptionist] Patient #4 received: ICU_1 | severity=10 | priority=1 | bed=ICU
+[Receptionist] Patient #5 received: ICU_2 | severity=10 | priority=1 | bed=ICU
+[Receptionist] Patient #6 received: ICU_3 | severity=10 | priority=1 | bed=ICU
+[Receptionist] Patient #7 received: ICU_4 | severity=10 | priority=1 | bed=ICU
+[Receptionist] Patient #8 received: ICU_5 | severity=10 | priority=1 | bed=ICU
+[Scheduler] ICU capacity reached; patient ICU_5 waiting for discharge
+[Nurse-ICU] Discharge signal received for patient ICU_1
+[Admissions] ICU bed freed; admitting queued ICU_5
+
+[Receptionist] Patient #9 received: ISO_1 | severity=7 | priority=2 | bed=ISOLATION
+[Receptionist] Patient #10 received: ISO_2 | severity=7 | priority=2 | bed=ISOLATION
+[Receptionist] Patient #11 received: ISO_3 | severity=7 | priority=2 | bed=ISOLATION
+[Receptionist] Patient #12 received: ISO_4 | severity=7 | priority=2 | bed=ISOLATION
+[Receptionist] Patient #13 received: ISO_5 | severity=7 | priority=2 | bed=ISOLATION
+[Scheduler] Isolation capacity reached; patient ISO_5 waiting for discharge
+[Nurse-ISOLATION] Discharge signal received for patient ISO_2
+[Admissions] Isolation bed freed; admitting queued ISO_5
+
+[Scheduler] No suitable bed for WAIT_1; waiting for a bed to be freed...
+[Scheduler] No suitable bed for WAIT_2; waiting for a bed to be freed...
+[Nurse-GENERAL] Discharge signal received for patient #2
+[Admissions] Bed freed for patient #2; coalescing adjacent free partitions
+[Scheduler] WAIT_1 admitted after bed became available
+
+[Build] make: completed successfully
+[Build] Warning: effective_priority defined but not used
+[Summary] Receptionist intake: PASS
+[Summary] Scheduler allocation: PASS
+[Summary] Nurse discharge handling: PASS
+[Summary] ICU semaphore limit: PASS
+[Summary] Isolation semaphore limit: PASS
+[Summary] Scheduler wait path: PARTIAL / demonstrated in sample excerpt

@@ -119,3 +119,38 @@ To remove build outputs and temporary IPC files:
 make clean
 ./scripts/stop_hospital.sh
 ```
+
+## Test Findings (Log Verification)
+
+The following findings were verified from the provided execution logs.
+
+1. Receptionist receives patients from triage FIFO: PASS
+  Evidence: repeated log lines such as `[Receptionist] Patient #1 received: Ali Khan ...` and `[Receptionist] Priority: ...`.
+
+2. Scheduler dequeues and allocates beds (best-fit behavior visible in partition splits): PASS
+  Evidence: repeated lines like `[Scheduler] Bed allocated for ...: partition ...` and ward snapshots showing partition split/merge behavior.
+
+3. Nurse threads process discharge and free/coalesce beds: PASS
+  Evidence: lines such as `[Nurse-ICU] Discharge signal received ...`, `[Nurse-GENERAL] ...`, `[Nurse-ISOLATION] ...`, followed by `[Admissions] Bed freed ...`.
+
+4. ICU and Isolation semaphore limits block admission and release after discharge: PASS
+  Evidence: in ICU stress test (`ICU_1` to `ICU_8`), first 4 were admitted, remaining patients were received but only admitted after ICU discharges (e.g., ICU_5 admitted after ICU_1 discharge). Similar behavior observed in Isolation stress test.
+
+5. Scheduler waits on bed-freed condition when no suitable partition exists: PARTIAL / NOT DIRECTLY SHOWN
+  Evidence needed: explicit scheduler log `[Scheduler] No suitable bed ... waiting for a bed to be freed...`.
+  Observation: this exact waiting log did not appear in the shared output, so the condition-variable wait path is not directly demonstrated by the current run.
+
+6. Build status:
+  - Build succeeded.
+  - Warning present: `effective_priority` defined but not used.
+
+Suggested extra test to explicitly show scheduler waiting path:
+
+```bash
+# Keep system running, then quickly saturate one bed class and continue sending same class
+for i in {1..20}; do ./scripts/Triage.sh "WAIT_$i" 55 10; done
+```
+
+Expected additional evidence:
+- `[Scheduler] No suitable bed for ...; waiting for a bed to be freed...`
+- Later admission of the same patient after a nurse frees a bed.
